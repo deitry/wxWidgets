@@ -1746,6 +1746,8 @@ void wxWindowMSW::Update()
 // drag and drop
 // ---------------------------------------------------------------------------
 
+#if wxUSE_DRAG_AND_DROP
+
 #if wxUSE_STATBOX
 
 // we need to lower the sibling static boxes so controls contained within can be
@@ -1776,8 +1778,6 @@ static inline void AdjustStaticBoxZOrder(wxWindow * WXUNUSED(parent))
 }
 
 #endif // wxUSE_STATBOX/!wxUSE_STATBOX
-
-#if wxUSE_DRAG_AND_DROP
 
 void wxWindowMSW::SetDropTarget(wxDropTarget *pDropTarget)
 {
@@ -3636,8 +3636,6 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
                 // the event may be handled by a parent window
                 wxPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
-                wxContextMenuEvent evtCtx(wxEVT_CONTEXT_MENU, GetId(), pt);
-
                 // we could have got an event from our child, reflect it back
                 // to it if this is the case
                 wxWindowMSW *win = NULL;
@@ -3650,8 +3648,7 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
                 if ( !win )
                     win = this;
 
-                evtCtx.SetEventObject(win);
-                processed = win->HandleWindowEvent(evtCtx);
+                processed = win->WXSendContextMenuEvent(pt);
 
                 if ( !processed )
                 {
