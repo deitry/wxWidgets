@@ -26,8 +26,6 @@ jobs:
       uses: einaregilsson/build-number@v2
       with:
         token: ${{secrets.GITHUB_TOKEN}}
-    - name: GitHub package Registry
-      run: nuget sources add -name GPR -Source https://nuget.pkg.github.com/wuganhao/index.json -Username wuganhao -Password ${{ secrets.GITHUB_TOKEN }}
     
     - name: Setup MSVC   
       uses: ilammy/msvc-dev-cmd@v1
@@ -45,7 +43,7 @@ jobs:
     - name: Build Push Nuget Package.
       run: |
         build\tools\msvs\nugetpush.bat -OutputDirectory dist -properties repository=${{github.repository}}
-        nuget push dist\*.nupkg -source GPR
+        nuget push dist\*.nupkg -source -Source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
 
     - name: Build - MSVC2019 - x64 Debug Dlls
       working-directory: ./build/msw
