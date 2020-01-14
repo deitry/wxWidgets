@@ -26,6 +26,11 @@ jobs:
       uses: einaregilsson/build-number@v2
       with:
         token: ${{secrets.GITHUB_TOKEN}}
+    
+    - name: Setup MSVC   
+    - uses: ilammy/msvc-dev-cmd@v1
+      arch: amd64
+      toolset: 16.XX
 
     - name: Build - MSVC2019 - x64 Release Dlls
       working-directory: ./build/msw
