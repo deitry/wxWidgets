@@ -33,7 +33,7 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
       #  arch: amd64
-        toolset: 16.XX
+        toolset: 16.0
 
     - name: Build - MSVC2019 - x64 Release Dlls
       working-directory: ./build/msw
