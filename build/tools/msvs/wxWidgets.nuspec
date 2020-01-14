@@ -11,9 +11,10 @@
         <repository type="git" url="https://github.com/$repository$/" />
     </metadata>
     <files>
-        <file src="$dllpath$\*.dll" target="content\pkgs\wxWidgets\bin\" />
-        <file src="$dllpath$\*.pdb" target="content\pkgs\wxWidgets\bin\" />
-        <file src="$dllpath$\*.lib" target="content\pkgs\wxWidgets\lib\" />
+        <file src="$dllpath$\*.dll"  target="content\pkgs\wxWidgets\bin\" />
+        <file src="$dllpath$\*.pdb"  target="content\pkgs\wxWidgets\bin\" />
+        <file src="$dllpath$\*.lib"  target="content\pkgs\wxWidgets\lib\" />
+        <file src="$dllpath$\**\*.h" target="content\pkgs\wxWidgets\lib\" />
         <file src="..\..\..\include\**\*.h" target="content\pkgs\wxWidgets\include\" />
     </files>
 </package>
