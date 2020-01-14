@@ -44,7 +44,7 @@ jobs:
 
     - name: Build Push Nuget Package.
       run: |
-        build\tools\msvs\nugetpush.bat -OutputDirectory dist --properties repository=${{github.repository}}
+        build\tools\msvs\nugetpush.bat -OutputDirectory dist -properties repository=${{github.repository}}
         nuget push dist\*.nupkg -source GPR
 
     - name: Build - MSVC2019 - x64 Debug Dlls
