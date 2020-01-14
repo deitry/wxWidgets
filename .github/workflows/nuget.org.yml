@@ -36,7 +36,7 @@ jobs:
         toolset: 16.0
 
     - name: Read version info
-      run build\tools\msvs\getversion.bat
+      run: build\tools\msvs\getversion.bat
 
     - name: Build - MSVC2019 - x64 Release Dlls
       working-directory: ./build/msw
