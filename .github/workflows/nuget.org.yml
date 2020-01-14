@@ -43,7 +43,7 @@ jobs:
     - name: Build Push Nuget Package.
       run: |
         build\tools\msvs\nugetpush.bat -OutputDirectory dist -properties repository=${{github.repository}}
-        nuget push dist\*.nupkg -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
+        nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
 
     - name: Build - MSVC2019 - x64 Debug Dlls
       working-directory: ./build/msw
