@@ -27,7 +27,7 @@ jobs:
       with:
         token: ${{secrets.GITHUB_TOKEN}}
     - name: GitHub package Registry
-      run: nuget sources add -name GPR -Source https://nuget.pkg.github.com/${{ github.repository }}/index.json -Username ${{ github.actor }} -Password ${{ secrets.GITHUB_TOKEN }}
+      run: nuget sources add -name GPR -Source https://nuget.pkg.github.com/wuganhao/index.json -Username ${{ github.actor }} -Password ${{ secrets.GITHUB_TOKEN }}
     
     - name: Setup MSVC   
       uses: ilammy/msvc-dev-cmd@v1
