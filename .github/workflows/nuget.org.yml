@@ -1,0 +1,28 @@
+name: Push Build
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@1.0.0
+
+    - name: Setup NuGet
+      uses: warrenbuckley/Setup-Nuget@v1
+
+    - name: Setup Build Number
+      uses: einaregilsson/build-number@v2
+      with:
+        token: ${{secrets.GITHUB_TOKEN}}
+
+    - name: Build: MSVC2019 - x64 Release Dlls
+      working-directory: ./WebContent
+      run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+
+    - name: Build: MSVC2019 - x64 Debug Dlls
+      working-directory: ./WebContent
+      run: nmake -f makefile.vc BUILD=Debug SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
