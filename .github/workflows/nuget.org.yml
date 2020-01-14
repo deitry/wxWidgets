@@ -38,7 +38,7 @@ jobs:
     - name: Build - MSVC2019 - x64 Release Dlls
       working-directory: ./build/msw
       run: |
-        call .\build\tools\msvs\getversion.bat
+        ".\build\tools\msvs\getversion.bat"
         nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
         nuget pack -OutputDirectory dist -OutputFileNamesWithoutVersion -properties id=wxWidgets.VC160.Shared;version=%wxMAJOR_VERSION%.%wxMINOR_VERSION%.%wxRELEASE_NUMBER%.%BUILD_NUMBER%;dllpath=lib\vc160_x64_dll;repository=${{github.repository}}
         nuget push dist\*.nupkg 
