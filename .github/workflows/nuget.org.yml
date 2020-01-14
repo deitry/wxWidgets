@@ -27,7 +27,7 @@ jobs:
       with:
         token: ${{secrets.GITHUB_TOKEN}}
     - name: GitHub package Registry
-      run: nuget sources add -name GPR -Source https://nuget.pkg.github.com/{{GITHUB_REPOSITORY}}/index.json -Username {{GITHUB_ACTOR}} -Password ${{ secrets.GITHUB_TOKEN }}
+      run: nuget sources add -name GPR -Source https://nuget.pkg.github.com/{{ github.repository }}/index.json -Username {{ github.actor }} -Password ${{ secrets.GITHUB_TOKEN }}
     
     - name: Setup MSVC   
       uses: ilammy/msvc-dev-cmd@v1
@@ -40,7 +40,7 @@ jobs:
       run: |
         call .\build\tools\msvs\getversion.bat
         nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
-        nuget pack -OutputDirectory dist -OutputFileNamesWithoutVersion -properties id=wxWidgets.VC160.Shared;version=%wxMAJOR_VERSION%.%wxMINOR_VERSION%.%wxRELEASE_NUMBER%.%BUILD_NUMBER%;dllpath=lib\vc160_x64_dll;repository={{GITHUB_REPOSITORY}}
+        nuget pack -OutputDirectory dist -OutputFileNamesWithoutVersion -properties id=wxWidgets.VC160.Shared;version=%wxMAJOR_VERSION%.%wxMINOR_VERSION%.%wxRELEASE_NUMBER%.%BUILD_NUMBER%;dllpath=lib\vc160_x64_dll;repository={{github.repository}}
         nuget push dist\*.nupkg 
 
     - name: Build - MSVC2019 - x64 Debug Dlls
