@@ -28,7 +28,7 @@ jobs:
         token: ${{secrets.GITHUB_TOKEN}}
     
     - name: Setup MSVC   
-    - uses: ilammy/msvc-dev-cmd@v1
+      uses: ilammy/msvc-dev-cmd@v1
       arch: amd64
       toolset: 16.XX
 
