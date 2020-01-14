@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <authors>Wu, Ganhao&lt;wuganhao@hotmail.com&gt;</authors>
+        <owners>wxWidgets</owners>
+        <developmentDependency>true</developmentDependency>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>wxWidgets Nuget Package.</description>
+        <repository type="git" url="https://github.com/$repository$/" />
+    </metadata>
+    <files>
+        <file src="$dllpath$\*.dll" target="content\pkgs\wxWidgets\bin\" />
+        <file src="$dllpath$\*.pdb" target="content\pkgs\wxWidgets\bin\" />
+        <file src="$dllpath$\*.lib" target="content\pkgs\wxWidgets\lib\" />
+        <file src="include\**\*.h" target="content\pkgs\wxWidgets\include\" />
+    </files>
+</package>
