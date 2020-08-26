@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>$id$</id>
+        <id>wxWidgets</id>
         <version>$version$</version>
         <authors>Wu, Ganhao&lt;wuganhao@hotmail.com&gt;</authors>
         <owners>wxWidgets</owners>
@@ -11,10 +11,10 @@
         <repository type="git" url="https://github.com/$repository$/" />
     </metadata>
     <files>
-        <file src="$dllpath$\*.dll"  target="content\pkgs\wxWidgets\bin\" />
-        <file src="$dllpath$\*.pdb"  target="content\pkgs\wxWidgets\bin\" />
-        <file src="$dllpath$\*.lib"  target="content\pkgs\wxWidgets\lib\" />
-        <file src="$dllpath$\**\*.h" target="content\pkgs\wxWidgets\lib\" />
-        <file src="..\..\..\include\**\*.h" target="content\pkgs\wxWidgets\include\" />
+        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\release\" />
+        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\release\" />
+        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\release\" />
+        <file src="lib\vc160_x64_dll\**\*.h" target="lib\native\x64\release\include\" />
+        <file src="include\**\*.h" target="include\" />
     </files>
 </package>
