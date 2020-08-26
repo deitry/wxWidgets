@@ -36,16 +36,16 @@ jobs:
     - name: Read version info
       run: build\tools\msvs\getversion.bat
 
-    - name: Build - MSVC2019 - x64 Release Dlls
+    - name: Build - Release
       working-directory: ./build/msw
-      run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+      run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=190 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+      
+    - name: Build - Debug
+      working-directory: ./build/msw
+      run: nmake -f makefile.vc BUILD=Debug SHARED=1 COMPILER_VERSION=190 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
 
     - name: Build Push Nuget Package.
       if: github.ref == 'refs/heads/master'
       run: |
         build\tools\msvs\nugetpush.bat -OutputDirectory dist -properties repository=${{github.repository}}
         nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
-
-    - name: Build - MSVC2019 - x64 Debug Dlls
-      working-directory: ./build/msw
-      run: nmake -f makefile.vc BUILD=Debug SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
