@@ -1852,8 +1852,20 @@ wxStreamError wxZipInputStream::ReadCentral()
     m_position += size;
     m_signature = ReadSignature();
 
-    if (m_offsetAdjustment)
-        m_entry.SetOffset(m_entry.GetOffset() + m_offsetAdjustment);
+    if (m_offsetAdjustment) {
+        // Offset read from the stream is 4 bytes independently of the
+        // platform, but it's not clear if it can become greater than max
+        // 32-bit value after adjustment. For now consider that it can't.
+        wxFileOffset ofs = wxUint32(m_entry.GetOffset());
+        ofs += m_offsetAdjustment;
+        if (ofs > wxUINT32_MAX) {
+            m_signature = 0;
+            return wxSTREAM_READ_ERROR;
+        }
+
+        m_entry.SetOffset(ofs);
+    }
+
     m_entry.SetKey(m_entry.GetOffset());
 
     return wxSTREAM_NO_ERROR;
@@ -2639,7 +2651,7 @@ size_t wxZipOutputStream::OnSysWrite(const void *buffer, size_t size)
 
     if (m_comp->Write(buffer, size).LastWrite() != size)
         m_lasterror = wxSTREAM_WRITE_ERROR;
-    m_crcAccumulator = crc32(m_crcAccumulator, (Byte*)buffer, size);
+    m_crcAccumulator = crc32(m_crcAccumulator, static_cast<const Byte*>(buffer), size);
     m_entrySize += m_comp->LastWrite();
 
     return m_comp->LastWrite();

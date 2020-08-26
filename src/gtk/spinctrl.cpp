@@ -270,6 +270,12 @@ void wxSpinCtrlGTKBase::DoSetRange(double minVal, double maxVal)
 {
     wxCHECK_RET( (m_widget != NULL), wxT("invalid spin button") );
 
+    // Negative values in the range are allowed only if base == 10
+    if ( !wxSpinCtrlImpl::IsBaseCompatibleWithRange(minVal, maxVal, GetBase()) )
+    {
+        return;
+    }
+
     wxSpinCtrlEventDisabler disable(this);
     gtk_spin_button_set_range( GTK_SPIN_BUTTON(m_widget), minVal, maxVal);
 
@@ -284,29 +290,22 @@ void wxSpinCtrlGTKBase::DoSetIncrement(double inc)
 
     wxSpinCtrlEventDisabler disable(this);
 
-    // Preserve the old page value when changing just the increment.
-    double page = 10*inc;
-    gtk_spin_button_get_increments( GTK_SPIN_BUTTON(m_widget), NULL, &page);
-
-    gtk_spin_button_set_increments( GTK_SPIN_BUTTON(m_widget), inc, page);
+    // With GTK2, gtk_spin_button_set_increments() does not emit the GtkAdjustment
+    // "changed" signal, which is needed to properly update the state of the control
+    GtkAdjustment* adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(m_widget));
+    gtk_adjustment_set_step_increment(adj, inc);
 }
 
-void wxSpinCtrlGTKBase::GtkDisableEvents() const
+void wxSpinCtrlGTKBase::GtkDisableEvents()
 {
-    g_signal_handlers_block_by_func( m_widget,
-        (gpointer)gtk_value_changed, (void*) this);
-
-    g_signal_handlers_block_by_func(m_widget,
-        (gpointer)gtk_changed, (void*) this);
+    g_signal_handlers_block_by_func(m_widget, (void*)gtk_value_changed, this);
+    g_signal_handlers_block_by_func(m_widget, (void*)gtk_changed, this);
 }
 
-void wxSpinCtrlGTKBase::GtkEnableEvents() const
+void wxSpinCtrlGTKBase::GtkEnableEvents()
 {
-    g_signal_handlers_unblock_by_func(m_widget,
-        (gpointer)gtk_value_changed, (void*) this);
-
-    g_signal_handlers_unblock_by_func(m_widget,
-        (gpointer)gtk_changed, (void*) this);
+    g_signal_handlers_unblock_by_func(m_widget, (void*)gtk_value_changed, this);
+    g_signal_handlers_unblock_by_func(m_widget, (void*)gtk_changed, this);
 }
 
 void wxSpinCtrlGTKBase::OnChar( wxKeyEvent &event )
@@ -358,18 +357,6 @@ GdkWindow *wxSpinCtrlGTKBase::GTKGetWindow(wxArrayGdkWindows& windows) const
 #endif
 
     return NULL;
-}
-
-void wxSpinCtrlGTKBase::GtkSetEntryWidth()
-{
-    const int minVal = static_cast<int>(DoGetMin());
-    const int maxVal = static_cast<int>(DoGetMax());
-
-    gtk_entry_set_width_chars
-    (
-        GTK_ENTRY(m_widget),
-        wxSpinCtrlImpl::GetMaxValueLength(minVal, maxVal, GetBase())
-    );
 }
 
 wxSize wxSpinCtrlGTKBase::DoGetSizeFromTextSize(int xlen, int ylen) const
@@ -443,6 +430,18 @@ wx_gtk_spin_output(GtkSpinButton* spin, wxSpinCtrl* win)
 
 } // extern "C"
 
+void wxSpinCtrl::GtkSetEntryWidth()
+{
+    const int minVal = static_cast<int>(DoGetMin());
+    const int maxVal = static_cast<int>(DoGetMax());
+
+    gtk_entry_set_width_chars
+    (
+        GTK_ENTRY(m_widget),
+        wxSpinCtrlImpl::GetMaxValueLength(minVal, maxVal, GetBase())
+    );
+}
+
 bool wxSpinCtrl::SetBase(int base)
 {
     // Currently we only support base 10 and 16. We could add support for base
@@ -453,6 +452,10 @@ bool wxSpinCtrl::SetBase(int base)
 
     if ( base == m_base )
         return true;
+
+    // For negative values in the range only base == 10 is allowed
+    if ( !wxSpinCtrlImpl::IsBaseCompatibleWithRange(static_cast<int>(DoGetMin()), static_cast<int>(DoGetMax()), base) )
+        return false;
 
     m_base = base;
 
@@ -492,6 +495,15 @@ bool wxSpinCtrl::SetBase(int base)
 
 wxIMPLEMENT_DYNAMIC_CLASS(wxSpinCtrlDouble, wxSpinCtrlGTKBase);
 
+void wxSpinCtrlDouble::GtkSetEntryWidth()
+{
+    const unsigned digits = GetDigits();
+    const int lenMin = wxString::Format("%.*f", digits, GetMin()).length();
+    const int lenMax = wxString::Format("%.*f", digits, GetMax()).length();
+
+    gtk_entry_set_width_chars(GTK_ENTRY(m_widget), wxMax(lenMin, lenMax));
+}
+
 unsigned wxSpinCtrlDouble::GetDigits() const
 {
     wxCHECK_MSG( m_widget, 0, "invalid spin button" );
@@ -505,6 +517,10 @@ void wxSpinCtrlDouble::SetDigits(unsigned digits)
 
     wxSpinCtrlEventDisabler disable(this);
     gtk_spin_button_set_digits( GTK_SPIN_BUTTON(m_widget), digits);
+
+    InvalidateBestSize();
+
+    GtkSetEntryWidth();
 }
 
 #endif // wxUSE_SPINCTRL

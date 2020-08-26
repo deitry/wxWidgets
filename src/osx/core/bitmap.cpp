@@ -17,6 +17,7 @@
     #include "wx/dcmemory.h"
     #include "wx/icon.h"
     #include "wx/image.h"
+    #include "wx/math.h"
 #endif
 
 #include "wx/metafile.h"
@@ -173,7 +174,7 @@ wxBitmapRefData::wxBitmapRefData(const wxBitmapRefData &tocopy) : wxGDIRefData()
         UseAlpha(true);
 
     unsigned char* dest = (unsigned char*)GetRawAccess();
-    unsigned char* source = (unsigned char*)tocopy.GetRawAccess();
+    const unsigned char* source = static_cast<const unsigned char*>(tocopy.GetRawAccess());
     size_t numbytes = GetBytesPerRow() * GetHeight();
     memcpy( dest, source, numbytes );
 }
@@ -780,7 +781,7 @@ wxBitmap::wxBitmap(const char bits[], int the_width, int the_height, int no_bits
             if ( the_width % 8 )
                 linesize++;
 
-            unsigned char* linestart = (unsigned char*) bits ;
+            const unsigned char* linestart = reinterpret_cast<const unsigned char*>(bits);
             unsigned char* destptr = (unsigned char*) GetBitmapData()->BeginRawAccess() ;
 
             for ( int y = 0 ; y < the_height ; ++y , linestart += linesize, destptr += GetBitmapData()->GetBytesPerRow() )
@@ -949,7 +950,7 @@ wxBitmap wxBitmap::GetSubBitmap(const wxRect &rect) const
     int destheight = rect.height*scale ;
 
     {
-        unsigned char *sourcedata = (unsigned char*) GetBitmapData()->GetRawAccess() ;
+        const unsigned char* sourcedata = static_cast<const unsigned char*>(GetBitmapData()->GetRawAccess());
         unsigned char *destdata = (unsigned char*) ret.GetBitmapData()->BeginRawAccess() ;
         wxASSERT((sourcedata != NULL) && (destdata != NULL));
 
@@ -957,7 +958,7 @@ wxBitmap wxBitmap::GetSubBitmap(const wxRect &rect) const
         {
             int sourcelinesize = GetBitmapData()->GetBytesPerRow() ;
             int destlinesize = ret.GetBitmapData()->GetBytesPerRow() ;
-            unsigned char* source = sourcedata + size_t(rect.x * scale) * 4 + size_t(rect.y * scale) * sourcelinesize;
+            const unsigned char* source = sourcedata + size_t(rect.x * scale) * 4 + size_t(rect.y * scale) * sourcelinesize;
             unsigned char* dest = destdata;
 
             for (int yy = 0; yy < destheight; ++yy, source += sourcelinesize , dest += destlinesize)
@@ -1062,16 +1063,17 @@ bool wxBitmap::LoadFile(const wxString& filename, wxBitmapType type)
 
         if  ( type == wxBITMAP_TYPE_PNG )
         {
-            if ( wxOSXGetMainScreenContentScaleFactor() > 1.9 )
+            const int contentScaleFactor = wxRound(wxOSXGetMainScreenContentScaleFactor());
+            if ( contentScaleFactor > 1 )
             {
                 wxFileName fn(filename);
                 fn.MakeAbsolute();
-                fn.SetName(fn.GetName()+"@2x");
+                fn.SetName(fn.GetName()+wxString::Format("@%dx",contentScaleFactor));
 
                 if ( fn.Exists() )
                 {
                     fname = fn.GetFullPath();
-                    scale = 2.0;
+                    scale = contentScaleFactor;
                 }
             }
         }
@@ -1199,7 +1201,7 @@ wxImage wxBitmap::ConvertToImage() const
     // this call may trigger a conversion from platform image to bitmap, issue it
     // before any measurements are taken, multi-resolution platform images may be
     // rendered incorrectly otherwise
-    unsigned char* sourcestart = (unsigned char*) GetBitmapData()->GetRawAccess() ;
+    const unsigned char* sourcestart = static_cast<const unsigned char*>(GetBitmapData()->GetRawAccess());
 
     // create an wxImage object
     int width = GetWidth();
@@ -1244,7 +1246,7 @@ wxImage wxBitmap::ConvertToImage() const
     for (int yy = 0; yy < height; yy++ , sourcestart += GetBitmapData()->GetBytesPerRow() , mask += maskBytesPerRow )
     {
         unsigned char * maskp = mask ;
-        const wxUint32 * source = (wxUint32*)sourcestart;
+        const wxUint32* source = reinterpret_cast<const wxUint32*>(sourcestart);
 
         for (int xx = 0; xx < width; xx++)
         {
@@ -1263,7 +1265,7 @@ wxImage wxBitmap::ConvertToImage() const
 #endif
             if ( hasMask )
             {
-                if ( *maskp++ == 0xFF )
+                if ( *maskp++ == 0x00 )
                 {
                     r = MASK_RED ;
                     g = MASK_GREEN ;
@@ -1709,6 +1711,44 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxJPEGResourceHandler, wxBundleResourceHandler);
 
 #if wxOSX_USE_COCOA
 
+class WXDLLEXPORT wxICNSHandler: public wxBitmapHandler
+{
+    wxDECLARE_DYNAMIC_CLASS(wxICNSHandler);
+
+public:
+    inline wxICNSHandler()
+    {
+        SetName(wxT("icns file"));
+        SetExtension("icns");
+        SetType(wxBITMAP_TYPE_ICON);
+    }
+
+    bool LoadFile(wxBitmap *bitmap,
+                          const wxString& name,
+                          wxBitmapType type,
+                          int desiredWidth,
+                          int desiredHeight) wxOVERRIDE
+    {
+        wxCFRef<CFURLRef> iconURL;
+        wxCFStringRef filePath(name);
+
+        iconURL.reset(CFURLCreateWithFileSystemPath(kCFAllocatorDefault, filePath, kCFURLPOSIXPathStyle, false));
+
+        WXImage img = wxOSXGetNSImageFromCFURL(iconURL);
+
+        if ( img )
+        {
+            bitmap->Create(img);
+            return true;
+        }
+
+        return wxBitmapHandler::LoadFile( bitmap, name, type, desiredWidth, desiredHeight);
+    }
+
+};
+
+wxIMPLEMENT_DYNAMIC_CLASS(wxICNSHandler, wxBitmapHandler);
+
 class WXDLLEXPORT wxICNSResourceHandler: public wxBundleResourceHandler
 {
     wxDECLARE_DYNAMIC_CLASS(wxICNSResourceHandler);
@@ -1858,21 +1898,22 @@ bool wxBundleResourceHandler::LoadFile(wxBitmap *bitmap,
                                      int WXUNUSED(desiredHeight))
 {
     wxString ext = GetExtension().Lower();
-    wxCFStringRef resname(name);
-    wxCFStringRef resname2x(name+"@2x");
     wxCFStringRef restype(ext);
     double scale = 1.0;
     
     wxCFRef<CFURLRef> imageURL;
     
-    if ( wxOSXGetMainScreenContentScaleFactor() > 1.9 )
+    const int contentScaleFactor = wxRound(wxOSXGetMainScreenContentScaleFactor());
+    if ( contentScaleFactor > 1 )
     {
-        imageURL.reset(CFBundleCopyResourceURL(CFBundleGetMainBundle(), resname2x, restype, NULL));
-        scale = 2.0;
+        wxCFStringRef resname(wxString::Format("%s@%dx", name, contentScaleFactor));
+        imageURL.reset(CFBundleCopyResourceURL(CFBundleGetMainBundle(), resname, restype, NULL));
+        scale = contentScaleFactor;
     }
     
     if ( imageURL.get() == NULL )
     {
+        wxCFStringRef resname(name);
         imageURL.reset(CFBundleCopyResourceURL(CFBundleGetMainBundle(), resname, restype, NULL));
         scale = 1.0;
     }
@@ -1915,6 +1956,7 @@ void wxBitmap::InitStandardHandlers()
 {
 #if wxOSX_USE_COCOA_OR_CARBON
     // no icns on iOS
+    AddHandler( new wxICNSHandler );
     AddHandler( new wxICNSResourceHandler ) ;
 #endif
     AddHandler( new wxPNGResourceHandler );

@@ -24,7 +24,6 @@
 #endif // WX_PRECOMP
 
 #include "wx/scopedptr.h"
-#include "wx/scopeguard.h"
 #include "wx/uiaction.h"
 
 #if wxUSE_CLIPBOARD
@@ -290,8 +289,7 @@ void TextCtrlTestCase::StreamInput()
 #ifndef __WXOSX__
     {
         // Ensure we use decimal point and not a comma.
-        char * const locOld = setlocale(LC_NUMERIC, "C");
-        wxON_BLOCK_EXIT2( setlocale, (int)LC_NUMERIC, locOld );
+        LocaleSetter setCLocale("C");
 
         *m_text << "stringinput"
                 << 10
@@ -359,6 +357,10 @@ void TextCtrlTestCase::HitTestSingleLine()
 
     long pos = -1;
 
+#ifdef __WXGTK__
+    wxYield();
+#endif
+
     // Hitting a point near the left side of the control should find one of the
     // first few characters under it.
     SECTION("Normal")
@@ -384,24 +386,14 @@ void TextCtrlTestCase::HitTestSingleLine()
         m_text->ChangeValue(wxString(200, 'X'));
         m_text->SetInsertionPointEnd();
 
+    #ifdef __WXGTK__
         // wxGTK must be given an opportunity to lay the text out.
-        wxYield();
+        for ( wxStopWatch sw; sw.Time() < 50; )
+            wxYield();
+    #endif
 
-        // For some reason, this test consistently fails when running under
-        // Xvfb. Debugging shows that the text gets scrolled too far, instead
-        // of scrolling by ~156 characters, leaving the remaining 44 shown, in
-        // normal runs, it gets scrolled by all 200 characters, leaving nothing
-        // shown. It's not clear why does it happen, and there doesn't seem
-        // anything we can do about it.
-        if ( IsRunningUnderXVFB() )
-        {
-            WARN("Skipping test known to fail under Xvfb");
-        }
-        else
-        {
-            REQUIRE( m_text->HitTest(wxPoint(2*sizeChar.x, yMid), &pos) == wxTE_HT_ON_TEXT );
-            CHECK( pos > 3 );
-        }
+        REQUIRE( m_text->HitTest(wxPoint(2*sizeChar.x, yMid), &pos) == wxTE_HT_ON_TEXT );
+        CHECK( pos > 3 );
 
         // Using negative coordinates works even under Xvfb, so test at least
         // for this -- however this only works in wxGTK, not wxMSW.
@@ -1421,5 +1413,23 @@ TEST_CASE("wxTextCtrl::LongPaste", "[wxTextCtrl][clipboard][paste]")
 }
 
 #endif // wxUSE_CLIPBOARD
+
+TEST_CASE("wxTextCtrl::EventsOnCreate", "[wxTextCtrl][event]")
+{
+    wxWindow* const parent = wxTheApp->GetTopWindow();
+
+    EventCounter updated(parent, wxEVT_TEXT);
+
+    wxScopedPtr<wxTextCtrl> text(new wxTextCtrl(parent, wxID_ANY, "Hello"));
+
+    // Creating the control shouldn't result in any wxEVT_TEXT events.
+    CHECK( updated.GetCount() == 0 );
+
+    // Check that modifying using SetValue() it does generate the event, just
+    // to verify that this test works (there are more detailed tests for this
+    // in TextEntryTestCase::TextChangeEvents()).
+    text->SetValue("Bye");
+    CHECK( updated.GetCount() == 1 );
+}
 
 #endif //wxUSE_TEXTCTRL

@@ -22,12 +22,12 @@
     #pragma hdrstop
 #endif
 
+#if wxUSE_SPINCTRL
+
 #include "wx/spinbutt.h"
 #include "wx/spinctrl.h"
 
 #include "wx/private/spinctrl.h"
-
-#if wxUSE_SPINCTRL
 
 wxDEFINE_EVENT(wxEVT_SPINCTRL, wxSpinEvent);
 wxDEFINE_EVENT(wxEVT_SPINCTRLDOUBLE, wxSpinDoubleEvent);
@@ -135,6 +135,12 @@ wxSize wxSpinCtrlImpl::GetBestSize(const wxControl* spin,
 {
     const wxString largestString('8', GetMaxValueLength(minVal, maxVal, base));
     return spin->GetSizeFromText(largestString);
+}
+
+bool wxSpinCtrlImpl::IsBaseCompatibleWithRange(int minVal, int maxVal, int base)
+{
+    // Negative values in the range are allowed only if base == 10
+    return base == 10 || (minVal >= 0 && maxVal >= 0);
 }
 
 #endif // wxUSE_SPINCTRL
