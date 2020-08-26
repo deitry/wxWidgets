@@ -11,10 +11,10 @@
         <repository type="git" url="https://github.com/$repository$/" />
     </metadata>
     <files>
-        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\release\" />
-        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\release\" />
-        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\release\" />
-        <file src="lib\vc160_x64_dll\**\*.h" target="lib\native\x64\release\include\" />
+        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
+        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
+        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
+        <file src="lib\vc160_x64_dll\**\*.h" target="include\" />
         <file src="include\**\*.h" target="include\" />
     </files>
 </package>
