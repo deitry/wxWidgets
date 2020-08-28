@@ -46,9 +46,7 @@ jobs:
         tagregexgroup: 1 # optional. default is 1.
       
     - name: Build Nuget Package (Prerelease)
-      run: |
-        build\tools\msvs\getversion.bat
-        nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=%wxMAJOR_VERSION%.%wxMINOR_VERSION%.%wxRELEASE_NUMBER%-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}}
+      run: nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}}
       
     - name: Build and Push Nuget Package (Release)
       if: startswith(github.ref, 'refs/tags/')
