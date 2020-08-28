@@ -46,8 +46,16 @@ jobs:
         tagregexgroup: 1 # optional. default is 1.
       
     - name: Build Nuget Package (Prerelease)
+      if: !startswith(github.ref, 'refs/tags/')
       run: nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
-      
+
+    - name: Upload Artifacts
+      if: !startswith(github.ref, 'refs/tags/')
+      uses: actions/upload-artifact@v2
+      with:
+        name: nuget
+        path: dist/*.nupkg      
+
     - name: Build and Push Nuget Package (Release)
       if: startswith(github.ref, 'refs/tags/')
       run: |
