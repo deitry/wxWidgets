@@ -36,14 +36,14 @@ jobs:
     - name: Build - Release
       working-directory: ./build/msw
       run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
-      
+
     - name: extract tag name
       if: startswith(github.ref, 'refs/tags/')
       uses: olegtarasov/get-tag@v2
       id: tagname
       with:
-        tagregex: "([0-9\\.]+.*)"  # optional. returns specified group text as tag name. full tag string is returned if regex is not defined.
-        tagregexgroup: 1 # optional. default is 1.
+        tagregex: "([0-9\\.]+.*)"
+        tagregexgroup: 1
 
     - name: Build Nuget Package - Prerelease
       if: !startswith(github.ref, 'refs/tags/')
