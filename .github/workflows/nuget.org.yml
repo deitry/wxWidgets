@@ -50,7 +50,7 @@ jobs:
       run: nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
 
     - name: Upload Artifacts
-      if: !startswith(github.ref, 'refs/tags/')
+      if: "!startswith(github.ref, 'refs/tags/')"
       uses: actions/upload-artifact@v2
       with:
         name: nuget
