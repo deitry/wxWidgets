@@ -44,7 +44,7 @@ jobs:
       with:
         tagregex: "([0-9\\.]+.*)"  # optional. returns specified group text as tag name. full tag string is returned if regex is not defined.
         tagregexgroup: 1 # optional. default is 1.
-      
+
     - name: Build Nuget Package - Prerelease
       if: !startswith(github.ref, 'refs/tags/')
       run: nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
