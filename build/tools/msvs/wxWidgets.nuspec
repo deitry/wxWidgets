@@ -16,5 +16,7 @@
         <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
         <file src="lib\vc160_x64_dll\**\*.h" target="include\" />
         <file src="include\**\*.h" target="include\" />
+        <file src="build\tools\msvs\wxWidgets.props" target="build\" />
+        <file src="build\tools\msvs\wxWidgets.targets" target="build\" />
     </files>
 </package>
