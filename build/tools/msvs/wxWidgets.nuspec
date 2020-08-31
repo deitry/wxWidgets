@@ -12,8 +12,11 @@
     </metadata>
     <files>
         <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
-        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
-        <file src="lib\vc160_x64_dll\*.dll"  target="lib\native\x64\" />
+        <!--
+        <file src="lib\vc160_x64_dll\*.pdb"  target="lib\native\x64\" />
+        -->
+        <file src="lib\vc160_x64_dll\*.lib"  target="lib\native\x64\" />
+        <file src="lib\vc160_x64_dll\mswu\wx\**\*.h"  target="lib\native\x64\mswu\wx\" />
         <file src="lib\vc160_x64_dll\**\*.h" target="include\" />
         <file src="include\**\*.h" target="include\" />
         <file src="build\tools\msvs\wxWidgets.props" target="build\" />
