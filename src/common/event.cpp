@@ -459,6 +459,22 @@ wxString wxCommandEvent::GetString() const
 }
 
 // ----------------------------------------------------------------------------
+// wxPaintEvent and wxNcPaintEvent
+// ----------------------------------------------------------------------------
+
+wxPaintEvent::wxPaintEvent(wxWindowBase* window)
+    : wxEvent(window ? window->GetId() : 0, wxEVT_PAINT)
+{
+    SetEventObject(window);
+}
+
+wxNcPaintEvent::wxNcPaintEvent(wxWindowBase* window)
+    : wxEvent(window ? window->GetId() : 0, wxEVT_NC_PAINT)
+{
+    SetEventObject(window);
+}
+
+// ----------------------------------------------------------------------------
 // wxUpdateUIEvent
 // ----------------------------------------------------------------------------
 
@@ -1919,8 +1935,7 @@ void wxEvtHandler::DoSetClientObject( wxClientData *data )
     wxASSERT_MSG( m_clientDataType != wxClientData_Void,
                   wxT("can't have both object and void client data") );
 
-    if ( m_clientObject )
-        delete m_clientObject;
+    delete m_clientObject;
 
     m_clientObject = data;
     m_clientDataType = wxClientData_Object;

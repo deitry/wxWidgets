@@ -1574,7 +1574,7 @@ public:
         Under GTK, the raw key code is the @c keyval field of the corresponding
         GDK event.
 
-        Under OS X, the raw key code is the @c keyCode field of the
+        Under macOS, the raw key code is the @c keyCode field of the
         corresponding NSEvent.
 
         @note Currently the raw key codes are not supported by all ports, use
@@ -1594,7 +1594,7 @@ public:
         Under GTK, the raw flags contain the @c hardware_keycode field of the
         corresponding GDK event.
 
-        Under OS X, the raw flags contain the modifiers state.
+        Under macOS, the raw flags contain the modifiers state.
 
         @note Currently the raw key flags are not supported by all ports, use
               @ifdef_ wxHAS_RAW_KEY_CODES to determine if this feature is available.
@@ -2215,9 +2215,14 @@ class wxPaintEvent : public wxEvent
 {
 public:
     /**
-        Constructor.
+        Constructor for exclusive use of wxWidgets itself.
+
+        Note that the objects of this class can @em not be created from
+        application code, they're only created by the library itself. If you
+        need a window to be repainted, use wxWindow::Refresh() instead of
+        trying to manually create an event of this class.
     */
-    wxPaintEvent(int id = 0);
+    explicit wxPaintEvent(wxWindow* window);
 };
 
 
@@ -2779,7 +2784,7 @@ public:
         (or zoom in), a negative value means we should shrink (or zoom out).
 
         This method is only valid to call for @c wxEVT_MAGNIFY events which are
-        currently only generated under OS X.
+        currently only generated under macOS.
 
         @see Magnify()
 
@@ -2872,7 +2877,7 @@ public:
     /**
         Returns @true if the event is a magnify (i.e.\ pinch to zoom) event.
 
-        Such events are currently generated only under OS X.
+        Such events are currently generated only under macOS.
 
         @see GetMagnification()
 

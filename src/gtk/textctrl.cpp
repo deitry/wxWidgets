@@ -66,7 +66,7 @@ wxGtkTextRemoveTagsWithPrefix(GtkTextBuffer *text_buffer,
                                 text_buffer,
                                 "remove_tag",
                                 G_CALLBACK(wxGtkOnRemoveTag),
-                                gpointer(prefix)
+                                const_cast<void*>(static_cast<const void*>(prefix))
                                );
     gtk_text_buffer_remove_all_tags(text_buffer, start, end);
     g_signal_handler_disconnect(text_buffer, remove_handler_id);
@@ -816,8 +816,15 @@ bool wxTextCtrl::Create( wxWindow *parent,
 
     if (!value.empty())
     {
-        SetValue( value );
-        InvalidateBestSize();
+        ChangeValue(value);
+
+        // The call to SetInitialSize() from inside PostCreation() didn't take
+        // the value into account because it hadn't been set yet when it was
+        // called (and setting it earlier wouldn't have been correct neither,
+        // as the appropriate size depends on the presence of the borders,
+        // which are configured in PostCreation()), so recompute the initial
+        // size again now that we have set it.
+        SetInitialSize(size);
     }
 
     if (style & wxTE_PASSWORD)

@@ -121,7 +121,7 @@ public:
     wxUint16 LowSurrogate() const { return LowSurrogate(m_value); }
 
     // Conversions to char and wchar_t types: all of those are needed to be
-    // able to pass wxUniChars to verious standard narrow and wide character
+    // able to pass wxUniChars to various standard narrow and wide character
     // functions
     operator char() const { return To8bit(m_value); }
     operator unsigned char() const { return (unsigned char)To8bit(m_value); }
@@ -267,7 +267,7 @@ public:
     wxUniCharRef& operator=(const wxUniCharRef& c)
         { if (&c != this) *this = c.UniChar(); return *this; }
 
-#if __cplusplus >= 201103
+#ifdef wxHAS_MEMBER_DEFAULT
     wxUniCharRef(const wxUniCharRef&) = default;
 #endif
 

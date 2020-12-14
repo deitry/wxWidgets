@@ -111,7 +111,7 @@ float wxSizerFlags::DoGetDefaultBorderInPx()
     if ( s_defaultBorderInPx.HasChanged(win) )
     {
         s_defaultBorderInPx.SetAtNewDPI(
-            (float)(5 * (win ? win->GetContentScaleFactor() : 1)));
+            (float)(5 * (win ? win->GetDPIScaleFactor() : 1.0)));
     }
     return s_defaultBorderInPx.Get();
 }
@@ -869,7 +869,7 @@ bool wxSizer::Replace( wxSizer *oldsz, wxSizer *newsz, bool recursive )
 bool wxSizer::Replace( size_t old, wxSizerItem *newitem )
 {
     wxCHECK_MSG( old < m_children.GetCount(), false, wxT("Replace index is out of range") );
-    wxASSERT_MSG( newitem, wxT("Replacing with NULL item") );
+    wxCHECK_MSG( newitem, false, wxT("Replacing with NULL item") );
 
     wxSizerItemList::compatibility_iterator node = m_children.Item( old );
 
@@ -878,10 +878,13 @@ bool wxSizer::Replace( size_t old, wxSizerItem *newitem )
     wxSizerItem *item = node->GetData();
     node->SetData(newitem);
 
-    if (item->IsWindow() && item->GetWindow())
-        item->GetWindow()->SetContainingSizer(NULL);
+    if (wxWindow* const w = item->GetWindow())
+        w->SetContainingSizer(NULL);
 
     delete item;
+
+    if (wxWindow* const w = newitem->GetWindow())
+        w->SetContainingSizer(this);
 
     return true;
 }
@@ -968,9 +971,28 @@ wxSize wxSizer::ComputeFittingWindowSize(wxWindow *window)
     return window->ClientToWindowSize(ComputeFittingClientSize(window));
 }
 
+#ifdef __WXGTK3__
+static void FitOnShow(wxShowEvent& event)
+{
+    wxWindow* win = static_cast<wxWindow*>(event.GetEventObject());
+    wxSizer* sizer = win->GetSizer();
+    if (sizer)
+        sizer->Fit(win);
+    win->Unbind(wxEVT_SHOW, FitOnShow);
+}
+#endif
+
 wxSize wxSizer::Fit( wxWindow *window )
 {
     wxCHECK_MSG( window, wxDefaultSize, "window can't be NULL" );
+
+#ifdef __WXGTK3__
+    // GTK3 updates cached style information before showing a TLW,
+    // which may affect best size calculations, so add a handler to
+    // redo the calculations at that time
+    if (!window->IsShown() && window->IsTopLevel())
+        window->Bind(wxEVT_SHOW, FitOnShow);
+#endif
 
     // set client size
     window->SetClientSize(ComputeFittingClientSize(window));
@@ -1009,6 +1031,17 @@ void wxSizer::Layout()
     RepositionChildren(minSize);
 }
 
+#ifdef __WXGTK3__
+static void SetSizeHintsOnShow(wxShowEvent& event)
+{
+    wxWindow* win = static_cast<wxWindow*>(event.GetEventObject());
+    wxSizer* sizer = win->GetSizer();
+    if (sizer)
+        sizer->SetSizeHints(win);
+    win->Unbind(wxEVT_SHOW, SetSizeHintsOnShow);
+}
+#endif
+
 void wxSizer::SetSizeHints( wxWindow *window )
 {
     // Preserve the window's max size hints, but set the
@@ -1019,6 +1052,12 @@ void wxSizer::SetSizeHints( wxWindow *window )
     // (1. ComputeFittingClientSize, 2. SetClientSize). That's because
     // otherwise SetClientSize() could have no effect if there already are
     // size hints in effect that forbid requested client size.
+
+#ifdef __WXGTK3__
+    // see comment in Fit()
+    if (!window->IsShown() && window->IsTopLevel())
+        window->Bind(wxEVT_SHOW, SetSizeHintsOnShow);
+#endif
 
     const wxSize clientSize = ComputeFittingClientSize(window);
 
