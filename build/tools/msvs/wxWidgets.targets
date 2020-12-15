@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\wxWidgets.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\include\;$(MSBuildThisFileDirectory)..\lib\native\x64\mswu;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>
+      %(wxWidgetsLibs);%(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <Link>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)..\lib\native\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+   </ItemDefinitionGroup>
+  <PropertyGroup Label="Globals">
+    <BuildDependsOn>$(BuildDependsOn);DeployArtifacts</BuildDependsOn>
+  </PropertyGroup>
+  <ItemGroup>
+    <wxWidgetsArtifacts Condition="'$(Configuration)'=='Release'" Include="$(MSBuildThisFileDirectory)..\lib\native\x64\release\*.dll" />
+    <!--
+    <wxWidgetsArtifacts Condition="'$(Configuration)'=='Debug'"   Include="$(MSBuildThisFileDirectory)..\lib\native\x64\debug\*.dll" />
+    <wxWidgetsArtifacts Condition="'$(Configuration)'=='Debug'"   Include="$(MSBuildThisFileDirectory)..\lib\native\x64\debug\*.pdb" />
+    -->
+  </ItemGroup>
+  <Target Name="DeployArtifacts">
+    <Error Text="Package 'wxWidgets' currently only support 64bit build" Condition="'$(Platform)'!='x64'" />
+    <Copy SourceFiles="@(wxWidgetsArtifacts)" DestinationFolder="$(TargetDir)\" />
+  </Target>
+</Project>
