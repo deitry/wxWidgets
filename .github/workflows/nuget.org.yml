@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Checkout with submodules
-    - uses: actions/checkout@v2
+      uses: actions/checkout@v2
       with:
         fetch-depth: 1
         submodules: recursive
@@ -33,7 +33,7 @@ jobs:
 
     steps:
     - name: Checkout with submodules
-    - uses: actions/checkout@v2
+      uses: actions/checkout@v2
       with:
         fetch-depth: 1
         submodules: recursive
