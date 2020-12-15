@@ -15,8 +15,10 @@ jobs:
         submodules: recursive
         clean: true
 
-    - name: Setup NuGet
-      uses: warrenbuckley/Setup-Nuget@v1
+    - uses: nuget/setup-nuget@v1
+      with:
+      nuget-api-key: ${{ secrets.nuget_apikey }}
+      nuget-version: '5.x'
 
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
@@ -39,8 +41,10 @@ jobs:
         submodules: recursive
         clean: true
 
-    - name: Setup NuGet
-      uses: warrenbuckley/Setup-Nuget@v1
+    - uses: nuget/setup-nuget@v1
+      with:
+      nuget-api-key: ${{ secrets.nuget_apikey }}
+      nuget-version: '5.x'
 
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
