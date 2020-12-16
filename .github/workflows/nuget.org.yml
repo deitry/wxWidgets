@@ -8,29 +8,22 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    #- name: Checkout
-    #  uses: actions/checkout@v2
-    
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      shell: bash
-      run: |
-        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-        git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-
-    - name: Setup NuGet
-      uses: warrenbuckley/Setup-Nuget@v1
-
-    - name: Setup Build Number
-      uses: einaregilsson/build-number@v2
+    - name: Checkout with submodules
+      uses: actions/checkout@v2
       with:
-        token: ${{secrets.GITHUB_TOKEN}}
-    
-    - name: Setup MSVC   
+        fetch-depth: 1
+        submodules: recursive
+        clean: true
+
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-api-key: ${{ secrets.nuget_apikey }}
+        nuget-version: '5.x'
+
+    - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
-      #  arch: amd64
+        arch: amd64
         toolset: 16.0
 
     - name: Build
@@ -41,29 +34,22 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    #- name: Checkout
-    #  uses: actions/checkout@v2
-    
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      shell: bash
-      run: |
-        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-        git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-
-    - name: Setup NuGet
-      uses: warrenbuckley/Setup-Nuget@v1
-
-    - name: Setup Build Number
-      uses: einaregilsson/build-number@v2
+    - name: Checkout with submodules
+      uses: actions/checkout@v2
       with:
-        token: ${{secrets.GITHUB_TOKEN}}
-    
-    - name: Setup MSVC   
+        fetch-depth: 1
+        submodules: recursive
+        clean: true
+
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-api-key: ${{ secrets.nuget_apikey }}
+        nuget-version: '5.x'
+
+    - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
-      #  arch: amd64
+        arch: amd64
         toolset: 16.0
 
     - name: Build
@@ -87,7 +73,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: nuget
-        path: dist/*.nupkg      
+        path: dist/*.nupkg
 
     - name: Build and Push Nuget Package - Release
       if: startswith(github.ref, 'refs/tags/')
