@@ -3,7 +3,7 @@
     <metadata>
         <id>wxWidgets</id>
         <version>$version$</version>
-        <authors>Wu, Ganhao&lt;wuganhao@hotmail.com&gt;</authors>
+        <authors>Wu Ganhao&lt;wuganhao@hotmail.com&gt;</authors>
         <owners>wxWidgets</owners>
         <developmentDependency>true</developmentDependency>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
