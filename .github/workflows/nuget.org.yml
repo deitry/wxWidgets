@@ -61,8 +61,8 @@ jobs:
 
     - name: Build
       run: |
-        mkdir build 
-        cd build
+        mkdir release 
+        cd release
         cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
         cmake --build . --config Release
         
