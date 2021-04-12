@@ -100,7 +100,7 @@ jobs:
     
     - name: extract tag name
       if: startswith(github.ref, 'refs/tags/')
-      uses: olegtarasov/get-tag@v2
+      uses: olegtarasov/get-tag@v2.1
       id: tagname
       with:
         tagregex: "([0-9\\.]+.*)"
