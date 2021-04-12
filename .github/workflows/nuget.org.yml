@@ -4,121 +4,56 @@ on:
   push:
 
 jobs:
-  build-debug:
-    runs-on: windows-latest
+runs-on: windows-latest
 
-    steps:
-    - name: Checkout with submodules
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 1
-        submodules: recursive
-        clean: true
+steps:
+- name: Checkout with submodules
+  uses: actions/checkout@v2
+  with:
+    fetch-depth: 1
+    submodules: recursive
+    clean: true
 
-    - uses: nuget/setup-nuget@v1
-      with:
-        nuget-api-key: ${{ secrets.nuget_apikey }}
-        nuget-version: '5.x'
+- uses: nuget/setup-nuget@v1
+  with:
+    nuget-api-key: ${{ secrets.nuget_apikey }}
+    nuget-version: '5.x'
 
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: amd64
-        toolset: 16.0
+- name: Setup MSVC
+  uses: ilammy/msvc-dev-cmd@v1
+  with:
+    arch: amd64
+    toolset: 16.0
 
-    - name: Build
-      run: |
-        mkdir debug 
-        cd debug
-        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
-        cmake --build . --config Debug
-        
-    - name: upload artifact for debug binary
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-debug-bin
-        path: debug/**/*
-
-  build-release:
-    runs-on: windows-latest
-
-    steps:
-    - name: Checkout with submodules
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 1
-        submodules: recursive
-        clean: true
-
-    - uses: nuget/setup-nuget@v1
-      with:
-        nuget-api-key: ${{ secrets.nuget_apikey }}
-        nuget-version: '5.x'
-
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: amd64
-        toolset: 16.0
-
-    - name: Build
-      run: |
-        mkdir release 
-        cd release
-        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
-        cmake --build . --config Release
-        
-    - name: upload artifact for release binary
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-release-bin
-        path: release/**/*
-        
-  package:
-    runs-on: windows-latest
-    timeout-minutes: 360
-    needs: [build-debug, build-release]
-
-    steps:
-    - name: Checkout OpenCV
-      uses: actions/checkout@v2
-      with:
-        clean: true
-        fetch-depth: 1    
-        
-    - name: download debug binary
-      uses: actions/download-artifact@v2
-      with:
-        name: build-debug-bin
-        path: debug
-       
-    - name: download release binary
-      uses: actions/download-artifact@v2
-      with:
-        name: build-release-bin
-        path: release
+- name: Build
+  run: |
+    mkdir compile 
+    cd compile
+    cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
+    cmake --build . --config Debug
+    cmake --build . --config Release
     
-    - name: extract tag name
-      if: startswith(github.ref, 'refs/tags/')
-      uses: olegtarasov/get-tag@v2.1
-      id: tagname
-      with:
-        tagregex: "([0-9\\.]+.*)"
-        tagregexgroup: 1
+- name: extract tag name
+  if: startswith(github.ref, 'refs/tags/')
+  uses: olegtarasov/get-tag@v2.1
+  id: tagname
+  with:
+    tagregex: "([0-9\\.]+.*)"
+    tagregexgroup: 1
 
-    - name: Build Nuget Package - Prerelease
-      if: "!startswith(github.ref, 'refs/tags/')"
-      run: nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+- name: Build Nuget Package - Prerelease
+  if: "!startswith(github.ref, 'refs/tags/')"
+  run: nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
 
-    - name: Upload Artifacts
-      if: "!startswith(github.ref, 'refs/tags/')"
-      uses: actions/upload-artifact@v2
-      with:
-        name: nuget
-        path: dist/*.nupkg
+- name: Upload Artifacts
+  if: "!startswith(github.ref, 'refs/tags/')"
+  uses: actions/upload-artifact@v2
+  with:
+    name: nuget
+    path: dist/*.nupkg
 
-    - name: Build and Push Nuget Package - Release
-      if: startswith(github.ref, 'refs/tags/')
-      run: |
-        nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
-        nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
+- name: Build and Push Nuget Package - Release
+  if: startswith(github.ref, 'refs/tags/')
+  run: |
+    nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+    nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
