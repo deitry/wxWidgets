@@ -32,10 +32,12 @@ jobs:
         cd debug
         cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
         cmake --build . --config Debug
-
-    # - name: Build
-      # working-directory: ./build/msw
-      # run: nmake -f makefile.vc BUILD=Debug SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+        
+    - name: upload artifact for debug binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-debug-bin
+        path: debug/**/*
 
   build-release:
     runs-on: windows-latest
@@ -66,10 +68,36 @@ jobs:
         cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
         cmake --build . --config Release
         
-    # - name: Build
-      # working-directory: ./build/msw
-      # run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+    - name: upload artifact for release binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-release-bin
+        path: release/**/*
+        
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 360
+    needs: [build-debug, build-release]
 
+    steps:
+    - name: Checkout OpenCV
+      uses: actions/checkout@v2
+      with:
+        clean: true
+        fetch-depth: 1    
+        
+    - name: download debug binary
+      uses: actions/download-artifact@v2
+      with:
+        name: build-debug-bin
+        path: debug
+       
+    - name: download release binary
+      uses: actions/download-artifact@v2
+      with:
+        name: build-release-bin
+        path: release
+    
     - name: extract tag name
       if: startswith(github.ref, 'refs/tags/')
       uses: olegtarasov/get-tag@v2
@@ -80,7 +108,7 @@ jobs:
 
     - name: Build Nuget Package - Prerelease
       if: "!startswith(github.ref, 'refs/tags/')"
-      run: nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+      run: nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
 
     - name: Upload Artifacts
       if: "!startswith(github.ref, 'refs/tags/')"
@@ -92,5 +120,5 @@ jobs:
     - name: Build and Push Nuget Package - Release
       if: startswith(github.ref, 'refs/tags/')
       run: |
-        nuget pack build\tools\msvs\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+        nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
         nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
