@@ -27,8 +27,15 @@ jobs:
         toolset: 16.0
 
     - name: Build
-      working-directory: ./build/msw
-      run: nmake -f makefile.vc BUILD=Debug SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+      run: |
+        mkdir debug 
+        cd debug
+        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
+        cmake --build . --config Debug
+
+    # - name: Build
+      # working-directory: ./build/msw
+      # run: nmake -f makefile.vc BUILD=Debug SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
 
   build-release:
     runs-on: windows-latest
@@ -53,8 +60,15 @@ jobs:
         toolset: 16.0
 
     - name: Build
-      working-directory: ./build/msw
-      run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
+      run: |
+        mkdir build 
+        cd build
+        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
+        cmake --build . --config Release
+        
+    # - name: Build
+      # working-directory: ./build/msw
+      # run: nmake -f makefile.vc BUILD=Release SHARED=1 COMPILER_VERSION=160 OFFICIAL_BUILD=1 TARGET_CPU=AMD64
 
     - name: extract tag name
       if: startswith(github.ref, 'refs/tags/')
