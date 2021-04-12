@@ -1,31 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <wxWidgetsVersion>3.1.4.1</wxWidgetsVersion>
-    <wxWidgetsLibs>
-    wxbase31u.lib;
-    wxbase31u_net.lib;
-    wxbase31u_xml.lib;
-    wxexpat.lib;
-    wxjpeg.lib;
-    wxmsw31u_adv.lib;
-    wxmsw31u_aui.lib;
-    wxmsw31u_core.lib;
-    wxmsw31u_gl.lib;
-    wxmsw31u_html.lib;
-    wxmsw31u_media.lib;
-    wxmsw31u_propgrid.lib;
-    wxmsw31u_qa.lib;
-    wxmsw31u_ribbon.lib;
-    wxmsw31u_richtext.lib;
-    wxmsw31u_stc.lib;
-    wxmsw31u_webview.lib;
-    wxmsw31u_xrc.lib;
-    wxpng.lib;
-    wxregexu.lib;
-    wxscintilla.lib;
-    wxtiff.lib;
-    wxzlib.lib;
-    </wxWidgetsLibs>
+    <wxWidgetsIncludePaths>$(MSBuildThisFileDirectory)..\include\;</wxWidgetsIncludePaths>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <wxWidgetsIncludePaths>$(wxWidgetsIncludePaths);$(MSBuildThisFileDirectory)..\lib\native\x64\$(Configuration)\mswu</wxWidgetsIncludePaths>
+    <wxWidgetsLibs>wxbase31u.lib;</wxWidgetsLibs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <wxWidgetsIncludePaths>$(wxWidgetsIncludePaths);$(MSBuildThisFileDirectory)..\lib\native\x64\$(Configuration)\mswud</wxWidgetsIncludePaths>
+    <wxWidgetsLibs>wxbase31ud.lib;</wxWidgetsLibs>
   </PropertyGroup>
 </Project>
