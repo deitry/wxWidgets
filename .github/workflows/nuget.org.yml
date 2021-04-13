@@ -30,7 +30,7 @@ jobs:
       run: |
         mkdir compile 
         cd compile
-        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON
+        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON -DwxBUILD_VENDOR= -DwxBUILD_CXX_STANDARD=17
         cmake --build . --config Debug
         cmake --build . --config Release
         

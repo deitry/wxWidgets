@@ -22,7 +22,8 @@
     <BuildDependsOn>$(BuildDependsOn);DeployArtifacts</BuildDependsOn>
   </PropertyGroup>
   <ItemGroup>
-    <wxWidgetsArtifacts Condition="'$(Configuration)'=='Release'" Include="$(MSBuildThisFileDirectory)..\lib\native\x64\$(Configuration)\*.dll" />
+    <wxWidgetsArtifacts Include="$(MSBuildThisFileDirectory)..\lib\native\x64\$(Configuration)\*.dll" />
+    <wxWidgetsArtifacts Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)..\lib\native\x64\$(Configuration)\*.pdb" />
   </ItemGroup>
   <Target Name="DeployArtifacts">
     <Error Text="Package 'wxWidgets' currently only support 64bit build" Condition="'$(Platform)'!='x64'" />
