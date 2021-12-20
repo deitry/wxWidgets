@@ -1,0 +1,61 @@
+name: Push Build
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout with submodules
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+        submodules: recursive
+        clean: true
+    
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-api-key: ${{ secrets.nuget_apikey }}
+        nuget-version: '5.x'
+    
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+        toolset: 16.0
+    
+    - name: Build
+      run: |
+        mkdir compile 
+        cd compile
+        cmake .. -DwxUSE_STL=OFF -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxBUILD_MONOLITHIC=ON -DwxBUILD_VENDOR= -DwxBUILD_CXX_STANDARD=17
+        cmake --build . --config Debug
+        cmake --build . --config Release
+        
+    - name: extract tag name
+      if: startswith(github.ref, 'refs/tags/')
+      uses: olegtarasov/get-tag@v2.1
+      id: tagname
+      with:
+        tagregex: "([0-9\\.]+.*)"
+        tagregexgroup: 1
+    
+    - name: Build Nuget Package - Prerelease
+      if: "!startswith(github.ref, 'refs/tags/')"
+      run: nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=1.0.0-prerelease -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+    
+    - name: Upload Artifacts
+      if: "!startswith(github.ref, 'refs/tags/')"
+      uses: actions/upload-artifact@v2
+      with:
+        name: nuget
+        path: dist/*.nupkg
+    
+    - name: Build and Push Nuget Package - Release
+      if: startswith(github.ref, 'refs/tags/')
+      run: |
+        nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+        nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
+    
