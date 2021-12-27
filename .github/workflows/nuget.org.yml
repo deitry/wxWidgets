@@ -29,14 +29,16 @@ jobs:
     - name: Build
       run: |
         mkdir dynamic
-        cmake dynamic -DwxBUILD_SHARED=ON  -DwxUSE_STL=ON -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxUSE_UNICODE=ON -DwxBUILD_MONOLITHIC=ON -DwxBUILD_VENDOR= -DwxBUILD_CXX_STANDARD=17
-        cmake --build dynamic --config Debug
-        cmake --build dynamic --config Release
+        cd dynamics
+        cmake .. -DwxBUILD_SHARED=ON  -DwxUSE_STL=ON -DwxUSE_GUI=1 -DwxBUILD_PRECOMP=1 -DwxUSE_UNICODE=ON -DwxBUILD_MONOLITHIC=ON -DwxBUILD_VENDOR= -DwxBUILD_CXX_STANDARD=17
+        cmake --build . --config Debug
+        cmake --build . --config Release
 
     - name: 'Tools'
       run: |
         mkdir static
-        cmake static  -DwxBUILD_SHARED=OFF -DwxUSE_STL=ON -DwxUSE_GUI=ON -DwxBUILD_PRECOMP=ON -DwxUSE_UNICODE=ON -DwxBUILD_MONOLITHIC=ON -DwxBUILD_VENDOR= -DwxBUILD_CXX_STANDARD=17
+        cd static
+        cmake ..  -DwxBUILD_SHARED=OFF -DwxUSE_STL=ON -DwxUSE_GUI=ON -DwxBUILD_PRECOMP=ON -DwxUSE_UNICODE=ON -DwxBUILD_MONOLITHIC=ON -DwxBUILD_VENDOR= -DwxBUILD_CXX_STANDARD=17
         
     - name: extract tag name
       if: startswith(github.ref, 'refs/tags/')
