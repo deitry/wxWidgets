@@ -23,8 +23,8 @@ jobs:
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: amd64
-        toolset: 16.0
+        arch: x64
+        toolset: 17.0
     
     - name: Build
       run: |
