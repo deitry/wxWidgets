@@ -432,3 +432,7 @@
 /debug/
 /release/
 /compile/
+/.vs/
+/out/
+/static/
+/CMakeSettings.json
