@@ -64,6 +64,6 @@ jobs:
     - name: Build and Push Nuget Package - Release
       if: startswith(github.ref, 'refs/tags/')
       run: |
-        nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -BasePath .
+        nuget pack bundle\nuget\wxWidgets.nuspec -OutputFileNamesWithoutVersion -properties version=${{env.git_tag_name}} -OutputDirectory dist\ -properties repository=${{github.repository}} -properties commit=${{ github.sha }} -BasePath .
         nuget push dist\*.nupkg -NoSymbols -source https://api.nuget.org/v3/index.json -apikey ${{ secrets.nuget_apikey }}
     
