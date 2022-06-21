@@ -16,5 +16,6 @@
         <file src="$dllpath$\*.lib"  target="content\pkgs\wxWidgets\lib\" />
         <file src="$dllpath$\**\*.h" target="content\pkgs\wxWidgets\lib\" />
         <file src="..\..\..\include\**\*.h" target="content\pkgs\wxWidgets\include\" />
+        <file src="..\..\..\include\**\*.cpp" target="content\pkgs\wxWidgets\include\" />
     </files>
 </package>
